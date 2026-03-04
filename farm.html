@@ -1,136 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kaymary Enterprise | Fresh Farm Produce</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap" rel="stylesheet">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>KAYMARY ENTERPRISE | Farm to Doorstep</title>
+    <meta name="description" content="Freshly harvested milk, sour cream, and premium livestock (pigs, goats, sheep) delivered directly from our farm to your doorstep.">
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&display=swap" rel="stylesheet"/>
+    
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1B4D2E",
+                        "accent-orange": "#F26522",
+                        "leaf-green": "#4CAF50",
+                        "background-light": "#F9FFF9",
+                    },
+                    fontFamily: { "display": ["Work Sans", "sans-serif"] },
+                },
+            },
+        }
+    </script>
     <style>
-        :root {
-            --brand-green-dark: #1B4D2E;
-            --brand-green-light: #4CAF50;
-            --brand-orange: #F26522;
-            --brand-white: #ffffff;
-            --text-gray: #333;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Montserrat', sans-serif; line-height: 1.6; color: var(--text-gray); background-color: #f9fff9; }
-
-        /* Header & Logo */
-        header { 
-            background-color: var(--brand-white); 
-            padding: 20px 5%; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            border-bottom: 5px solid var(--brand-green-dark);
-        }
-        .logo-container { display: flex; align-items: center; }
-        .logo-box { background: var(--brand-green-dark); color: white; padding: 10px; font-weight: 800; text-transform: uppercase; line-height: 1; border-radius: 4px; }
-
-        /* Hero Section */
-        .hero { 
-            background: linear-gradient(rgba(27, 77, 46, 0.8), rgba(27, 77, 46, 0.6)), url('https://images.unsplash.com/photo-1500595046743-cd27ad066618?q=80&w=2070&auto=format&fit=crop'); 
-            background-size: cover; background-position: center;
-            color: white; text-align: center; padding: 100px 20px;
-        }
-        .hero h1 { font-size: 2.5rem; margin-bottom: 15px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
-        .hero span { color: var(--brand-green-light); font-weight: 800; }
-
-        /* Product Sections */
-        .container { max-width: 1100px; margin: auto; padding: 50px 20px; }
-        h2 { color: var(--brand-green-dark); text-align: center; margin-bottom: 40px; text-transform: uppercase; border-bottom: 3px solid var(--brand-orange); display: inline-block; position: relative; left: 50%; transform: translateX(-50%); }
-
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
-        .category-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.05); border: 1px solid #eee; }
-        .card-header { background: var(--brand-green-dark); color: white; padding: 15px; font-weight: bold; font-size: 1.2rem; }
-        .card-body { padding: 25px; }
-        .card-body ul { list-style: none; }
-        .card-body li { padding: 10px 0; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; }
-        .card-body li::before { content: "●"; color: var(--brand-orange); margin-right: 10px; }
-
-        /* Features Bar */
-        .features { background: var(--brand-green-dark); color: white; padding: 40px 0; text-align: center; }
-        .feature-item { display: inline-block; margin: 10px 30px; font-weight: 700; }
-
-        /* Order Button */
-        .order-zone { text-align: center; padding: 60px 20px; background: #fff; }
-        .cta-btn { 
-            background: var(--brand-orange); color: white; padding: 20px 40px; 
-            text-decoration: none; border-radius: 50px; font-weight: 800; font-size: 1.4rem;
-            display: inline-block; transition: 0.3s; box-shadow: 0 4px 15px rgba(242, 101, 34, 0.4);
-        }
-        .cta-btn:hover { background: #d4561b; transform: translateY(-3px); }
-
-        /* Footer */
-        footer { background: #111; color: #ccc; padding: 40px 5%; text-align: center; }
-        .phone-list { margin: 20px 0; display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; }
-        .phone-link { color: white; text-decoration: none; font-weight: bold; border: 1px solid #444; padding: 10px 20px; border-radius: 5px; }
-
-        @media (max-width: 600px) { .hero h1 { font-size: 1.8rem; } }
+        body { font-family: 'Work Sans', sans-serif; scroll-behavior: smooth; }
+        .hero-gradient { background: linear-gradient(rgba(27, 77, 46, 0.8), rgba(0, 0, 0, 0.5)); }
     </style>
 </head>
-<body>
 
-    <header>
-        <div class="logo-container">
-            <div class="logo-box">KAYMARY<br>ENTERPRISE</div>
+<body class="bg-background-light text-slate-900">
+
+    <header class="sticky top-0 z-50 flex items-center bg-white/95 backdrop-blur-sm p-4 border-b border-primary/10 justify-between">
+        <div class="flex items-center gap-2">
+            <div class="text-white flex size-10 shrink-0 items-center justify-center bg-primary rounded-lg shadow-md">
+                <span class="material-symbols-outlined text-2xl">agriculture</span>
+            </div>
+            <div>
+                <h1 class="text-primary text-lg font-black leading-tight tracking-tight uppercase">KAYMARY</h1>
+                <p class="text-[10px] font-bold text-accent-orange tracking-[0.2em] uppercase">Enterprise</p>
+            </div>
         </div>
-        <div style="color: var(--brand-green-dark); font-weight: bold; text-align: right;">Fresh • Natural • Quality</div>
+        <nav class="hidden md:flex gap-6 font-bold text-sm text-primary">
+            <a href="#home" class="hover:text-accent-orange">Home</a>
+            <a href="#offerings" class="hover:text-accent-orange">Offerings</a>
+            <a href="#contact" class="hover:text-accent-orange">Contact</a>
+        </nav>
+        <a href="https://wa.me/260968375404" class="bg-primary text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg hover:bg-leaf-green transition-all">Order Now</a>
     </header>
 
-    <section class="hero">
-        <h1>Direct from <span>our farm</span><br>to your doorstep!</h1>
-        <p>Experience the finest livestock and dairy produce in Zambia.</p>
-    </section>
-
-    <div class="features">
-        <div class="feature-item">✓ Delivery</div>
-        <div class="feature-item">✓ Competitive Prices</div>
-        <div class="feature-item">✓ Excellent Service</div>
-    </div>
-
-    <div class="container">
-        <div class="grid">
-            <div class="category-card">
-                <div class="card-header">Freshly Harvested</div>
-                <div class="card-body">
-                    <ul>
-                        <li>Fresh Milk</li>
-                        <li>Sour Cream</li>
-                    </ul>
+    <main class="max-w-4xl mx-auto">
+        
+        <section id="home" class="p-4">
+            <div class="relative flex min-h-[500px] flex-col gap-6 bg-cover bg-center rounded-3xl items-center justify-center p-8 text-center shadow-2xl overflow-hidden" 
+                 style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80');">
+                <div class="flex flex-col gap-4 animate-fade-in">
+                    <span class="bg-accent-orange text-white text-[10px] font-black tracking-[0.3em] uppercase py-1 px-3 rounded-full mx-auto w-fit">Direct from our farm</span>
+                    <h2 class="text-white text-5xl font-black leading-tight tracking-tight md:text-6xl">
+                        To your <span class="text-leaf-green">doorstep!</span>
+                    </h2>
+                    <p class="text-white/90 text-lg font-medium max-w-lg mx-auto">
+                        Experience pure, natural freshness with our quality-assured dairy and livestock.
+                    </p>
+                </div>
+                <div class="flex flex-wrap justify-center gap-4 mt-4">
+                    <a href="#offerings" class="bg-white text-primary px-8 py-3 rounded-full font-bold shadow-xl hover:scale-105 transition-transform">Explore Produce</a>
                 </div>
             </div>
+        </section>
 
-            <div class="category-card">
-                <div class="card-header">Livestock</div>
-                <div class="card-body">
-                    <ul>
-                        <li>Pigs</li>
-                        <li>Goats</li>
-                        <li>Sheep</li>
-                    </ul>
+        <section class="flex justify-around py-8 px-4 text-center">
+            <div><p class="text-primary font-black text-xl">100%</p><p class="text-xs font-bold uppercase text-slate-500">Natural</p></div>
+            <div class="border-x border-slate-200 px-8"><p class="text-primary font-black text-xl">Fresh</p><p class="text-xs font-bold uppercase text-slate-500">Daily</p></div>
+            <div><p class="text-primary font-black text-xl">Zambia</p><p class="text-xs font-bold uppercase text-slate-500">Wide Delivery</p></div>
+        </section>
+
+        <section id="offerings" class="px-6 py-12 bg-white rounded-t-[3rem] shadow-inner">
+            <div class="flex flex-col items-center mb-10">
+                <h3 class="text-3xl font-black text-primary mb-2">Our Offerings</h3>
+                <div class="h-1.5 w-20 bg-accent-orange rounded-full"></div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="group p-1 bg-gradient-to-br from-primary/20 to-transparent rounded-3xl transition-all hover:shadow-xl">
+                    <div class="bg-white p-6 rounded-[calc(1.5rem-1px)] h-full">
+                        <div class="bg-primary/10 text-primary w-14 h-14 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+                            <span class="material-symbols-outlined text-3xl">water_drop</span>
+                        </div>
+                        <h4 class="text-xl font-black mb-2">Freshly Harvested</h4>
+                        <p class="text-leaf-green font-bold text-sm mb-3">Fresh Milk • Sour Cream</p>
+                        <p class="text-slate-500 text-sm italic">Pure, natural dairy processed with the highest standards of hygiene.</p>
+                    </div>
+                </div>
+
+                <div class="group p-1 bg-gradient-to-br from-primary/20 to-transparent rounded-3xl transition-all hover:shadow-xl">
+                    <div class="bg-white p-6 rounded-[calc(1.5rem-1px)] h-full">
+                        <div class="bg-primary/10 text-primary w-14 h-14 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+                            <span class="material-symbols-outlined text-3xl">pets</span>
+                        </div>
+                        <h4 class="text-xl font-black mb-2">Livestock</h4>
+                        <p class="text-leaf-green font-bold text-sm mb-3">Pigs • Goats • Sheep</p>
+                        <p class="text-slate-500 text-sm italic">Healthy, well-bred livestock raised in a stress-free environment.</p>
+                    </div>
                 </div>
             </div>
-        </div>
+        </section>
+
+        <section id="contact" class="px-4 py-12">
+            <div class="bg-primary rounded-[2.5rem] p-8 md:p-12 text-white relative overflow-hidden shadow-2xl">
+                <div class="relative z-10 flex flex-col md:flex-row gap-8 items-center">
+                    <div class="md:w-1/2">
+                        <h3 class="text-4xl font-black mb-4">Ready to order?</h3>
+                        <p class="text-white/70 mb-8 font-medium">Competitive prices, excellent customer service, and fresh delivery guaranteed.</p>
+                        <div class="space-y-4">
+                            <a href="https://wa.me/260968375404" class="flex items-center gap-4 bg-white/10 p-4 rounded-2xl hover:bg-white/20 transition-all border border-white/10">
+                                <span class="material-symbols-outlined">chat</span>
+                                <div><p class="text-xs uppercase font-bold opacity-60">WhatsApp / Call</p><p class="text-lg font-bold">+260 96 8375404</p></div>
+                            </a>
+                            <a href="tel:0770713619" class="flex items-center gap-4 bg-white/10 p-4 rounded-2xl hover:bg-white/20 transition-all border border-white/10">
+                                <span class="material-symbols-outlined">call</span>
+                                <div><p class="text-xs uppercase font-bold opacity-60">Mobile Line</p><p class="text-lg font-bold">0770713619</p></div>
+                            </a>
+                            <a href="https://wa.me/260770123726" class="flex items-center gap-4 bg-white/10 p-4 rounded-2xl hover:bg-white/20 transition-all border border-white/10">
+                                <span class="material-symbols-outlined">chat</span>
+                                <div><p class="text-xs uppercase font-bold opacity-60">Secondary Line</p><p class="text-lg font-bold">+260 770123726</p></div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2 bg-white/5 p-6 rounded-3xl border border-white/5 backdrop-blur-md">
+                        <h4 class="text-center font-black text-xl mb-4">Quality Assured</h4>
+                        <ul class="space-y-3">
+                            <li class="flex items-center gap-3"><span class="material-symbols-outlined text-leaf-green">check_circle</span> Fresh & Natural</li>
+                            <li class="flex items-center gap-3"><span class="material-symbols-outlined text-leaf-green">check_circle</span> Competitive Prices</li>
+                            <li class="flex items-center gap-3"><span class="material-symbols-outlined text-leaf-green">check_circle</span> Prompt Delivery</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center py-10 text-slate-400 text-xs font-bold tracking-widest uppercase">
+            <p>&copy; 2026 KAYMARY ENTERPRISE. All Rights Reserved.</p>
+        </footer>
+
+    </main>
+
+    <div class="fixed bottom-6 right-6 md:hidden z-50">
+        <a href="https://wa.me/260968375404" class="bg-leaf-green text-white p-4 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform">
+            <span class="material-symbols-outlined text-3xl">chat</span>
+        </a>
     </div>
-
-    <section class="order-zone">
-        <h2>Ready to Taste the Quality?</h2>
-        <p style="margin-bottom: 30px;">Our produce is Fresh, Natural, and Quality Assured.</p>
-        <a href="#contacts" class="cta-btn">ORDER NOW AND ENJOY</a>
-    </section>
-
-    <footer id="contacts">
-        <h3>Contact Our Sales Team</h3>
-        <div class="phone-list">
-            <a href="https://wa.me/260968375404" class="phone-link">🟢 +260 96 8375404</a>
-            <a href="tel:0770713619" class="phone-link">📞 0770713619</a>
-            <a href="https://wa.me/260770123726" class="phone-link">🟢 +260 770123726</a>
-        </div>
-        <p>&copy; 2024 Kaymary Enterprise. All Rights Reserved.</p>
-    </footer>
 
 </body>
 </html>
