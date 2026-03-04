@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaymary Enterprise | Fresh Farm Produce</title>
+    <style>
+        :root {
+            --farm-green: #2d5a27;
+            --bright-orange: #ff8c00;
+            --light-bg: #f4f9f2;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; color: #333; background-color: var(--light-bg); }
+        
+        /* Navigation */
+        nav { background: var(--farm-green); color: white; padding: 1rem 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .logo { font-weight: bold; font-size: 1.5rem; }
+        
+        /* Hero Section */
+        header { 
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80');
+            background-size: cover; background-position: center; height: 60vh; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            color: white; text-align: center; padding: 0 20px;
+        }
+        header h1 { font-size: 3rem; margin-bottom: 10px; }
+        
+        /* Buttons */
+        .cta-btn { 
+            background: var(--bright-orange); color: white; padding: 15px 30px; 
+            text-decoration: none; border-radius: 30px; font-weight: bold; font-size: 1.2rem;
+            transition: transform 0.3s;
+        }
+        .cta-btn:hover { transform: scale(1.05); }
+
+        /* Content Sections */
+        section { padding: 50px 10%; text-align: center; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 30px; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card h3 { color: var(--farm-green); }
+
+        /* Footer */
+        footer { background: #222; color: white; padding: 30px; text-align: center; }
+        .contact-info { margin-top: 10px; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">KAYMARY ENTERPRISE</div>
+        <div>Fresh • Natural • Quality</div>
+    </nav>
+
+    <header>
+        <h1>Direct from our farm to your doorstep!</h1>
+        <p>Order fresh milk, livestock, and dairy products today.</p>
+        <br>
+        <a href="https://wa.me/260968375404" class="cta-btn">Order via WhatsApp</a>
+    </header>
+
+    <section id="products">
+        <h2>Our Produce</h2>
+        <div class="grid">
+            <div class="card">
+                <h3>Fresh Dairy</h3>
+                <p>Fresh Milk & Creamy Sour Cream</p>
+            </div>
+            <div class="card">
+                <h3>Livestock</h3>
+                <p>High-quality Pigs, Goats, and Sheep</p>
+            </div>
+            <div class="card">
+                <h3>Quality Assured</h3>
+                <p>Raised naturally and handled with care</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 Kaymary Enterprise</p>
+        <div class="contact-info">
+            📞 +260 96 8375404 | +260 770713619 | +260 770123726
+        </div>
+    </footer>
+
+</body>
+</html>
