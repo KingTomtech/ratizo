@@ -26,9 +26,21 @@
     ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
     ::-webkit-scrollbar-thumb { background: rgba(71, 85, 105, 0.8); border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.8); }
+
+    /* Toast Notifications */
+    .toast-container { position: fixed; top: 20px; right: 20px; z-index: 100; display: flex; flex-direction: column; gap: 10px; }
+    .toast { padding: 16px 20px; border-radius: 12px; font-size: 14px; font-weight: 500; box-shadow: 0 10px 40px rgba(0,0,0,0.3); animation: slideIn 0.3s ease-out; display: flex; align-items: center; gap: 10px; min-width: 300px; }
+    .toast-success { background: rgba(16, 185, 129, 0.9); color: white; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .toast-error { background: rgba(239, 68, 68, 0.9); color: white; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .toast-info { background: rgba(59, 130, 246, 0.9); color: white; border: 1px solid rgba(59, 130, 246, 0.3); }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
   </style>
 </head>
 <body class="gradient-bg min-h-screen text-slate-200">
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
 
   <!-- AUTH SCREEN -->
   <div id="auth-screen" class="min-h-screen flex items-center justify-center p-6">
@@ -352,8 +364,8 @@
   <script>
     const WORKER_URL = "https://lenco.nickchansa24.workers.dev";
 
-    // Organization ID - set this from your Supabase or environment
-    const ORGANIZATION_ID = localStorage.getItem('lenco_org_id') || '';
+    // Your Organization ID - hardcoded from your Supabase setup
+    const ORGANIZATION_ID = "67e9f077-4fcc-4741-b20a-64be71230892";
 
     const app = {
       supabase: null,
@@ -361,6 +373,7 @@
       collections: [],
       filteredCollections: [],
       selectedCollection: null,
+      configLoaded: false,
 
       async login(event) {
         event.preventDefault();
@@ -375,7 +388,8 @@
         errorDiv.classList.add("hidden");
 
         try {
-          const configRes = await fetch(`${WORKER_URL}/api/config`);
+          // Fetch Supabase config from worker's /config endpoint
+          const configRes = await fetch(`${WORKER_URL}/config`);
           if (!configRes.ok) throw new Error("Failed to fetch configuration");
           const config = await configRes.json();
 
@@ -384,18 +398,14 @@
           const { data, error } = await this.supabase.auth.signInWithPassword({ email, password });
           if (error) throw error;
 
-          // Store org info if available
-          if (data.user && data.user.identities && data.user.identities[0]) {
-            const orgId = data.user.user_metadata.organization_id;
-            if (orgId) {
-              this.currentOrgId = orgId;
-              localStorage.setItem('lenco_org_id', orgId);
-            }
-          }
+          // Store org info
+          this.currentOrgId = ORGANIZATION_ID;
+          localStorage.setItem('lenco_org_id', ORGANIZATION_ID);
 
           document.getElementById("auth-screen").classList.add("hidden");
           document.getElementById("dashboard-screen").classList.remove("hidden");
           document.getElementById("user-email").textContent = email;
+          document.getElementById("org-name").textContent = "Organization: " + ORGANIZATION_ID.slice(0, 8) + "...";
 
           await this.loadDashboard();
         } catch (err) {
@@ -603,11 +613,12 @@
           this.closeModal('collect-mobile');
           await this.loadCollections();
 
-          // Show success notification (could be improved with toast)
-          alert(`✅ Collection created successfully!\nReference: ${data.data?.reference || payload.external_reference}`);
+          // Show success notification
+          this.showToast('success', `Collection created successfully!`, `Reference: ${data.data?.reference || payload.external_reference}`);
         } catch (err) {
           errorDiv.textContent = err.message;
           errorDiv.classList.remove("hidden");
+          this.showToast('error', 'Failed to create collection', err.message);
           console.error(err);
         } finally {
           btn.disabled = false;
@@ -651,10 +662,11 @@
           this.closeModal('collect-card');
           await this.loadCollections();
 
-          alert(`✅ Card collection created successfully!\nReference: ${data.data?.reference || payload.external_reference}`);
+          this.showToast('success', 'Card collection created successfully!', `Reference: ${data.data?.reference || payload.external_reference}`);
         } catch (err) {
           errorDiv.textContent = err.message;
           errorDiv.classList.remove("hidden");
+          this.showToast('error', 'Failed to create card collection', err.message);
           console.error(err);
         } finally {
           btn.disabled = false;
@@ -772,12 +784,12 @@
             this.viewDetails(updated.reference);
             this.calculateStats();
 
-            alert(`Status updated: ${updated.status}`);
+            this.showToast('success', 'Status updated successfully!', `Current status: ${updated.status}`);
           } else {
             throw new Error(data.error || "Failed to check status");
           }
         } catch (err) {
-          alert(`Error checking status: ${err.message}`);
+          this.showToast('error', 'Failed to check status', err.message);
           console.error(err);
         } finally {
           btn.disabled = false;
@@ -800,12 +812,39 @@
         if (this.supabase) this.supabase.auth.signOut();
         localStorage.removeItem('lenco_org_id');
         location.reload();
+      },
+
+      // Toast notification system
+      showToast(type, title, message = '') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+
+        const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+        toast.innerHTML = `
+          <span class="text-xl">${icon}</span>
+          <div>
+            <p class="font-semibold">${title}</p>
+            ${message ? `<p class="text-sm opacity-90">${message}</p>` : ''}
+          </div>
+        `;
+
+        container.appendChild(toast);
+
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+          toast.style.animation = 'fadeOut 0.3s ease-out';
+          setTimeout(() => toast.remove(), 300);
+        }, 5000);
       }
     };
 
-    // Auto-login check
+    // Auto-login check on page load
     window.onload = async () => {
-      // Could implement session persistence here if needed
+      const savedOrgId = localStorage.getItem('lenco_org_id');
+      if (savedOrgId) {
+        app.currentOrgId = savedOrgId;
+      }
     };
   </script>
 </body>
