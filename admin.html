@@ -89,12 +89,12 @@
         const password = document.getElementById("password").value;
 
         try {
-          // Get Supabase config from your worker
+          // Get Supabase config from worker
           const configRes = await fetch(`${WORKER_URL}/api/config`);
           const config = await configRes.json();
 
-          // FIXED: Use window.supabase (correct for the UMD build)
-          this.supabase = window.supabase.createClient(config.supabase_url, config.supabase_anon_key);
+          // FIXED: Use the correct global name from UMD build
+          this.supabase = Supabase.createClient(config.supabase_url, config.supabase_anon_key);
 
           const { data, error } = await this.supabase.auth.signInWithPassword({ email, password });
           if (error) throw error;
