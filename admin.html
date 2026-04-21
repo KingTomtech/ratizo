@@ -10,14 +10,9 @@
     * { font-family: 'Inter', system-ui, sans-serif; }
     .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
     .glass { background: rgba(30, 41, 59, 0.9); backdrop-filter: blur(16px); border: 1px solid rgba(148, 163, 184, 0.25); }
-    .status-badge { padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 500; }
-    .toast { animation: slideIn 0.3s ease-out forwards; }
-    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
   </style>
 </head>
 <body class="gradient-bg min-h-screen text-slate-200">
-
-  <div id="toast-container" class="fixed top-6 right-6 z-50 flex flex-col gap-3"></div>
 
   <!-- AUTH SCREEN -->
   <div id="auth-screen" class="min-h-screen flex items-center justify-center p-6">
@@ -48,14 +43,13 @@
     </header>
 
     <main class="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
-      <!-- Stats -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="glass rounded-3xl p-6">
           <p class="text-slate-400">Total Balance</p>
           <p id="total-balance" class="text-5xl font-bold text-white mt-2">ZMW 0.00</p>
         </div>
         <div class="glass rounded-3xl p-6">
-          <p class="text-slate-400">Pending Collections</p>
+          <p class="text-slate-400">Pending</p>
           <p id="pending-count" class="text-5xl font-bold text-amber-400 mt-2">0</p>
         </div>
         <div class="glass rounded-3xl p-6">
@@ -64,20 +58,16 @@
         </div>
       </div>
 
-      <!-- Collections Table -->
       <div class="glass rounded-3xl p-6">
-        <div class="flex justify-between mb-6">
-          <h2 class="text-xl font-semibold">Recent Collections</h2>
-          <button onclick="app.refreshData()" class="text-blue-400 hover:text-blue-300 text-sm font-medium">Refresh</button>
-        </div>
+        <h2 class="text-xl font-semibold mb-4">Recent Collections</h2>
         <table class="w-full">
           <thead>
             <tr class="text-xs text-slate-400 border-b">
-              <th class="text-left py-4 px-4">Reference</th>
-              <th class="text-left py-4 px-4">Channel</th>
-              <th class="text-left py-4 px-4">Amount</th>
-              <th class="text-left py-4 px-4">Status</th>
-              <th class="text-left py-4 px-4">Date</th>
+              <th class="text-left py-4">Reference</th>
+              <th class="text-left py-4">Channel</th>
+              <th class="text-left py-4">Amount</th>
+              <th class="text-left py-4">Status</th>
+              <th class="text-left py-4">Date</th>
             </tr>
           </thead>
           <tbody id="collections-body" class="divide-y divide-slate-700 text-sm"></tbody>
@@ -99,11 +89,12 @@
         const password = document.getElementById("password").value;
 
         try {
-          // Get Supabase config from worker
+          // Get Supabase config from your worker
           const configRes = await fetch(`${WORKER_URL}/api/config`);
           const config = await configRes.json();
 
-          this.supabase = Supabase.createClient(config.supabase_url, config.supabase_anon_key);
+          // FIXED: Use window.supabase (correct for the UMD build)
+          this.supabase = window.supabase.createClient(config.supabase_url, config.supabase_anon_key);
 
           const { data, error } = await this.supabase.auth.signInWithPassword({ email, password });
           if (error) throw error;
@@ -124,7 +115,7 @@
 
       async loadCollections() {
         const tbody = document.getElementById("collections-body");
-        tbody.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-slate-400">Loading...</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-slate-400">Loading collections...</td></tr>`;
 
         try {
           const res = await fetch(`${WORKER_URL}/api/collections?organization_id=${ORGANIZATION_ID}`);
@@ -159,16 +150,10 @@
         `).join('');
       },
 
-      async refreshData() {
-        await this.loadCollections();
-      },
-
       logout() {
         location.reload();
       }
     };
-
-    window.onload = () => {};
   </script>
 </body>
 </html>
