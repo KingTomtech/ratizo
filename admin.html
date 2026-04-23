@@ -90,7 +90,7 @@
 
         try {
           // Get Supabase config from your worker
-          const configRes = await fetch(`${WORKER_URL}/config`);
+          const configRes = await fetch(`${WORKER_URL}/api/config`);
           const config = await configRes.json();
 
           // FIXED: Correct global name from UMD build
