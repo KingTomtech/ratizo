@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lenco Payments Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.1.0/400.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.1.0/500.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.1.0/600.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.1.0/700.css">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); }
+    .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(148, 163, 184, 0.1); }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+    .pulse-dot { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .slide-in { animation: slideIn 0.3s ease-out; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .status-pending { background: #f59e0b20; color: #f59e0b; }
+    .status-success { background: #10b98120; color: #10b981; }
+    .status-failed { background: #ef444420; color: #ef4444; }
+    .tab-active { background: rgba(59, 130, 246, 0.2); color: #3b82f6; border-color: #3b82f6; }
+    .toast { animation: toastIn 0.3s ease-out, toastOut 0.3s ease-in 2.7s forwards; }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes toastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100%); } }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            slate: { 850: '#1a2332' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="gradient-bg min-h-screen text-slate-200">
+  <div id="app" class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="glass sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </div>
+            <div>
+              <h1 class="text-xl font-bold text-white">Lenco Payments</h1>
+              <p class="text-xs text-slate-400">v2.0 Dashboard • Cloudflare + Supabase</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <div id="healthIndicator" class="flex items-center gap-2 text-sm">
+              <div class="w-2 h-2 rounded-full bg-slate-600 pulse-dot"></div>
+              <span class="text-slate-400">Checking...</span>
+            </div>
+            <button onclick="showToast('Settings coming soon', 'info')" class="p-2 rounded-lg hover:bg-slate-700/50 transition-colors">
+              <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+      <!-- API Configuration -->
+      <section class="glass rounded-2xl p-6 mb-8 slide-in">
+        <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+          API Configuration (v2.0)
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-400 mb-2">Worker Base URL</label>
+            <input type="text" id="workerUrl" value="https://your-worker.workers.dev" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="https://your-worker.workers.dev">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-400 mb-2">API Key (x-api-key)</label>
+            <input type="password" id="apiKey" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="sk-xxxxxxxxx">
+          </div>
+        </div>
+        <div class="mt-4">
+          <label class="block text-sm font-medium text-slate-400 mb-2">Organization ID</label>
+          <input type="text" id="orgId" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="org_xxxxxxxxxx">
+        </div>
+      </section>
+
+      <!-- Navigation Tabs -->
+      <div class="flex flex-wrap gap-2 mb-8">
+        <button onclick="switchTab('mobile-money')" id="tab-mobile-money" class="tab-btn px-4 py-2 rounded-xl border border-slate-700 text-sm font-medium transition-all hover:border-slate-600 tab-active">
+          📱 Mobile Money
+        </button>
+        <button onclick="switchTab('card')" id="tab-card" class="tab-btn px-4 py-2 rounded-xl border border-slate-700 text-sm font-medium transition-all hover:border-slate-600">
+          💳 Card Payment
+        </button>
+        <button onclick="switchTab('status')" id="tab-status" class="tab-btn px-4 py-2 rounded-xl border border-slate-700 text-sm font-medium transition-all hover:border-slate-600">
+          🔍 Check Status
+        </button>
+        <button onclick="switchTab('collections')" id="tab-collections" class="tab-btn px-4 py-2 rounded-xl border border-slate-700 text-sm font-medium transition-all hover:border-slate-600">
+          📊 Collections
+        </button>
+        <button onclick="switchTab('webhooks')" id="tab-webhooks" class="tab-btn px-4 py-2 rounded-xl border border-slate-700 text-sm font-medium transition-all hover:border-slate-600">
+          🔔 Webhooks
+        </button>
+      </div>
+
+      <!-- Mobile Money Tab -->
+      <div id="panel-mobile-money" class="panel slide-in">
+        <div class="glass rounded-2xl p-6 card-hover transition-all duration-300">
+          <h3 class="text-lg font-semibold text-white mb-2 flex items-center gap-2">
+            <span class="text-2xl">📱</span> Mobile Money Collection (v2)
+          </h3>
+          <p class="text-slate-400 text-sm mb-6">Process mobile money payments via Lenco v2 API</p>
+          
+          <form id="mobileMoneyForm" onsubmit="submitMobileMoney(event)" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-400 mb-2">Amount (ZMW)</label>
+                <input type="number" name="amount" step="0.01" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="100.00">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-400 mb-2">Phone Number</label>
+                <input type="tel" name="phone" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="0977123456">
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-400 mb-2">Operator</label>
+                <select name="operator" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                  <option value="">Select operator</option>
+                  <option value="mtn">MTN</option>
+                  <option value="airtel">Airtel</option>
+                  <option value="zamtel">Zamtel</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-400 mb-2">External Reference</label>
+                <input type="text" name="external_reference" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="inv-001">
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">Narration (Optional)</label>
+              <input type="text" name="narration" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="Payment for services">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">Fee Bearer</label>
+              <select name="bearer" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                <option value="merchant">Merchant</option>
+                <option value="customer">Customer</option>
+              </select>
+            </div>
+            <button type="submit" id="submitMobileMoneyBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-all flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+              Initiate Mobile Money Payment
+            </button>
+          </form>
+
+          <div id="mobileMoneyResult" class="mt-6 hidden">
+            <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-sm font-medium text-slate-300">Lenco v2 Response</span>
+                <button onclick="copyResult('mobileMoneyResultCode')" class="text-xs text-blue-400 hover:text-blue-300 transition-colors">Copy JSON</button>
+              </div>
+              <pre id="mobileMoneyResultCode" class="text-xs text-slate-300 overflow-x-auto whitespace-pre-wrap"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Payment Tab -->
+      <div id="panel-card" class="panel hidden slide-in">
+        <div class="glass rounded-2xl p-6 card-hover transition-all duration-300">
+          <h3 class="text-lg font-semibold text-white mb-2 flex items-center gap-2">
+            <span class="text-2xl">💳</span> Card Collection (v2)
+          </h3>
+          <p class="text-slate-400 text-sm mb-6">Process card payments via Lenco v2 API with encrypted card data</p>
+          
+          <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6">
+            <div class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+              </svg>
+              <div>
+                <p class="text-sm text-amber-300 font-medium">Security Note</p>
+                <p class="text-xs text-amber-200/70 mt-1">The <code class="bg-amber-500/20 px-1 rounded">encrypted_data</code> must be a valid JWE payload (never send raw card data).</p>
+              </div>
+            </div>
+          </div>
+          
+          <form id="cardForm" onsubmit="submitCard(event)" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-400 mb-2">Amount (ZMW)</label>
+                <input type="number" name="amount" step="0.01" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="100.00">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-400 mb-2">External Reference</label>
+                <input type="text" name="external_reference" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="inv-002">
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">Encrypted Data (JWE)</label>
+              <textarea name="encrypted_data" required rows="4" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-mono text-xs" placeholder="eyJhbGciOiJSU0EtT0FFUC0yNTYiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwia2lkIjoiMSJ9..."></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">Narration (Optional)</label>
+              <input type="text" name="narration" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="Card payment">
+            </div>
+            <button type="submit" id="submitCardBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-all flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+              Initiate Card Payment
+            </button>
+          </form>
+
+          <div id="cardResult" class="mt-6 hidden">
+            <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-sm font-medium text-slate-300">Lenco v2 Response</span>
+                <button onclick="copyResult('cardResultCode')" class="text-xs text-blue-400 hover:text-blue-300 transition-colors">Copy JSON</button>
+              </div>
+              <pre id="cardResultCode" class="text-xs text-slate-300 overflow-x-auto whitespace-pre-wrap"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Check Tab -->
+      <div id="panel-status" class="panel hidden slide-in">
+        <div class="glass rounded-2xl p-6 card-hover transition-all duration-300">
+          <h3 class="text-lg font-semibold text-white mb-2 flex items-center gap-2">
+            <span class="text-2xl">🔍</span> Collection Status (v2)
+          </h3>
+          <p class="text-slate-400 text-sm mb-6">Check the status of a payment by its Lenco reference</p>
+          
+          <form id="statusForm" onsubmit="checkStatus(event)" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-400 mb-2">Lenco Reference</label>
+              <input type="text" name="reference" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="lenco-ref-xxxxx">
+            </div>
+            <button type="submit" id="statusBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-all flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              Check Status
+            </button>
+          </form>
+
+          <div id="statusResult" class="mt-6 hidden">
+            <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-sm font-medium text-slate-300">Status Response</span>
+                <button onclick="copyResult('statusResultCode')" class="text-xs text-blue-400 hover:text-blue-300 transition-colors">Copy JSON</button>
+              </div>
+              <pre id="statusResultCode" class="text-xs text-slate-300 overflow-x-auto whitespace-pre-wrap"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Collections List Tab -->
+      <div id="panel-collections" class="panel hidden slide-in">
+        <div class="glass rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                <span class="text-2xl">📊</span> All Collections
+              </h3>
+              <p class="text-slate-400 text-sm mt-1">View all payment collections for your organization</p>
+            </div>
+            <button onclick="loadCollections()" id="refreshCollectionsBtn" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              Refresh
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-slate-700">
+                  <th class="text-left py-3 px-4 text-slate-400 font-medium">Reference</th>
+                  <th class="text-left py-3 px-4 text-slate-400 font-medium">External Ref</th>
+                  <th class="text-left py-3 px-4 text-slate-400 font-medium">Channel</th>
+                  <th class="text-left py-3 px-4 text-slate-400 font-medium">Amount</th>
+                  <th class="text-left py-3 px-4 text-slate-400 font-medium">Status</th>
+                  <th class="text-left py-3 px-4 text-slate-400 font-medium">Date</th>
+                </tr>
+              </thead>
+              <tbody id="collectionsTableBody">
+                <tr><td colspan="6" class="py-8 text-center text-slate-500">Click Refresh to load collections</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div id="collectionsEmpty" class="hidden py-12 text-center">
+            <svg class="w-16 h-16 mx-auto text-slate-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <p class="text-slate-400">No collections found</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Webhooks Tab -->
+      <div id="panel-webhooks" class="panel hidden slide-in">
+        <div class="glass rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                <span class="text-2xl">🔔</span> Webhook Events
+              </h3>
+              <p class="text-slate-400 text-sm mt-1">Lenco v2 webhook receiver (configured in your worker)</p>
+            </div>
+          </div>
+
+          <div class="bg-slate-800/50 rounded-xl p-4 mb-6">
+            <h4 class="text-sm font-medium text-slate-300 mb-3">Your Webhook URL (set this in Lenco dashboard)</h4>
+            <div class="flex items-center gap-2">
+              <code id="webhookUrlDisplay" class="text-xs text-green-400 font-mono bg-slate-900 px-3 py-2 rounded-lg flex-1">https://your-worker.workers.dev/webhook</code>
+              <button onclick="copyText(document.getElementById('webhookUrlDisplay').textContent)" class="text-xs text-blue-400 hover:text-blue-300 px-3 py-2 rounded-lg hover:bg-slate-700/50 transition-all">Copy</button>
+            </div>
+          </div>
+
+          <div class="text-slate-400 text-sm">
+            Webhook events are automatically stored in your Supabase <code class="bg-slate-900 px-1 rounded">webhook_events</code> table.<br>
+            You can view them in Supabase dashboard or extend this UI with realtime subscriptions.
+          </div>
+        </div>
+      </div>
+
+      <!-- API Reference -->
+      <section class="mt-8 glass rounded-2xl p-6">
+        <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          Lenco v2.0 Endpoints (Worker)
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xs font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded">POST</span>
+              <code class="text-xs text-slate-300">/api/collect/mobile-money</code>
+            </div>
+            <p class="text-xs text-slate-500">Initiate mobile money collection</p>
+          </div>
+          <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xs font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded">POST</span>
+              <code class="text-xs text-slate-300">/api/collect/card</code>
+            </div>
+            <p class="text-xs text-slate-500">Initiate card collection (JWE required)</p>
+          </div>
+          <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xs font-bold text-blue-400 bg-blue-400/10 px-2 py-1 rounded">GET</span>
+              <code class="text-xs text-slate-300">/api/collections/{ref}/status</code>
+            </div>
+            <p class="text-xs text-slate-500">Check collection status</p>
+          </div>
+          <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xs font-bold text-blue-400 bg-blue-400/10 px-2 py-1 rounded">GET</span>
+              <code class="text-xs text-slate-300">/api/collections</code>
+            </div>
+            <p class="text-xs text-slate-500">List all collections</p>
+          </div>
+          <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xs font-bold text-orange-400 bg-orange-400/10 px-2 py-1 rounded">POST</span>
+              <code class="text-xs text-slate-300">/webhook</code>
+            </div>
+            <p class="text-xs text-slate-500">Lenco webhook receiver</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+  </div>
+
+  <script>
+    // State
+    let currentTab = 'mobile-money';
+    const headers = () => ({
+      'Content-Type': 'application/json',
+      'x-api-key': document.getElementById('apiKey').value || ''
+    });
+
+    const baseUrl = () => {
+      const url = document.getElementById('workerUrl').value.trim().replace(/\/$/, '');
+      return url || 'http://127.0.0.1:8787';
+    };
+
+    // Tab switching
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('tab-active'));
+      document.getElementById(`panel-${tab}`).classList.remove('hidden');
+      document.getElementById(`tab-${tab}`).classList.add('tab-active');
+    }
+
+    // Health check
+    async function checkHealth() {
+      const indicator = document.getElementById('healthIndicator');
+      try {
+        const res = await fetch(`${baseUrl()}/`);
+        if (res.ok) {
+          const data = await res.json();
+          indicator.innerHTML = `<div class="w-2 h-2 rounded-full bg-green-400 pulse-dot"></div><span class="text-green-400 text-sm">${data.service} ${data.version}</span>`;
+        } else {
+          indicator.innerHTML = `<div class="w-2 h-2 rounded-full bg-red-400"></div><span class="text-red-400 text-sm">Error</span>`;
+        }
+      } catch (e) {
+        indicator.innerHTML = `<div class="w-2 h-2 rounded-full bg-red-400"></div><span class="text-red-400 text-sm">Offline</span>`;
+      }
+    }
+
+    // Mobile Money
+    async function submitMobileMoney(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitMobileMoneyBtn');
+      btn.disabled = true;
+      btn.innerHTML = `<svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Processing...`;
+
+      const form = e.target;
+      const data = {
+        organization_id: document.getElementById('orgId').value,
+        amount: parseFloat(form.amount.value),
+        phone: form.phone.value,
+        operator: form.operator.value,
+        external_reference: form.external_reference.value,
+        narration: form.narration.value || "Payment",
+        bearer: form.bearer.value
+      };
+
+      try {
+        const res = await fetch(`${baseUrl()}/api/collect/mobile-money`, {
+          method: 'POST',
+          headers: headers(),
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        document.getElementById('mobileMoneyResult').classList.remove('hidden');
+        document.getElementById('mobileMoneyResultCode').textContent = JSON.stringify(result, null, 2);
+        showToast(res.ok ? 'Mobile money payment initiated!' : 'Request failed', res.ok ? 'success' : 'error');
+      } catch (err) {
+        showToast('Network error: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Initiate Mobile Money Payment`;
+      }
+    }
+
+    // Card Payment
+    async function submitCard(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitCardBtn');
+      btn.disabled = true;
+      btn.innerHTML = `<svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Processing...`;
+
+      const form = e.target;
+      const data = {
+        organization_id: document.getElementById('orgId').value,
+        amount: parseFloat(form.amount.value),
+        external_reference: form.external_reference.value,
+        encrypted_data: form.encrypted_data.value,
+        narration: form.narration.value || "Card Payment"
+      };
+
+      try {
+        const res = await fetch(`${baseUrl()}/api/collect/card`, {
+          method: 'POST',
+          headers: headers(),
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        document.getElementById('cardResult').classList.remove('hidden');
+        document.getElementById('cardResultCode').textContent = JSON.stringify(result, null, 2);
+        showToast(res.ok ? 'Card payment initiated!' : 'Request failed', res.ok ? 'success' : 'error');
+      } catch (err) {
+        showToast('Network error: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Initiate Card Payment`;
+      }
+    }
+
+    // Status Check
+    async function checkStatus(e) {
+      e.preventDefault();
+      const btn = document.getElementById('statusBtn');
+      btn.disabled = true;
+      btn.innerHTML = `<svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Checking...`;
+
+      const ref = e.target.reference.value.trim();
+
+      try {
+        const res = await fetch(`${baseUrl()}/api/collections/${ref}/status`, {
+          headers: headers()
+        });
+        const result = await res.json();
+        document.getElementById('statusResult').classList.remove('hidden');
+        document.getElementById('statusResultCode').textContent = JSON.stringify(result, null, 2);
+        showToast('Status retrieved', 'success');
+      } catch (err) {
+        showToast('Network error: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> Check Status`;
+      }
+    }
+
+    // Load Collections
+    async function loadCollections() {
+      const btn = document.getElementById('refreshCollectionsBtn');
+      btn.innerHTML = `<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Loading...`;
+
+      const orgId = document.getElementById('orgId').value.trim();
+      try {
+        const res = await fetch(`${baseUrl()}/api/collections?organization_id=${encodeURIComponent(orgId)}`, {
+          headers: headers()
+        });
+        const data = await res.json();
+        const tbody = document.getElementById('collectionsTableBody');
+        
+        if (data.data && data.data.length > 0) {
+          document.getElementById('collectionsEmpty').classList.add('hidden');
+          tbody.innerHTML = data.data.map(item => `
+            <tr class="border-b border-slate-800 hover:bg-slate-800/30 transition-colors">
+              <td class="py-3 px-4 font-mono text-xs text-blue-400">${item.reference || '-'}</td>
+              <td class="py-3 px-4 text-xs text-slate-400">${item.external_reference || '-'}</td>
+              <td class="py-3 px-4"><span class="text-xs px-2 py-1 rounded-full ${item.channel === 'mobile-money' ? 'bg-purple-500/20 text-purple-400' : 'bg-cyan-500/20 text-cyan-400'}">${item.channel || '-'}</span></td>
+              <td class="py-3 px-4 text-xs font-medium text-white">ZMW ${parseFloat(item.amount || 0).toFixed(2)}</td>
+              <td class="py-3 px-4"><span class="text-xs px-2 py-1 rounded-full status-${item.status || 'pending'}">${item.status || 'pending'}</span></td>
+              <td class="py-3 px-4 text-xs text-slate-500">${item.initiated_at ? new Date(item.initiated_at).toLocaleString() : '-'}</td>
+            </tr>
+          `).join('');
+        } else {
+          document.getElementById('collectionsEmpty').classList.remove('hidden');
+          tbody.innerHTML = '';
+        }
+        showToast(`Loaded ${data.data?.length || 0} collections`, 'success');
+      } catch (err) {
+        showToast('Failed to load collections: ' + err.message, 'error');
+        document.getElementById('collectionsTableBody').innerHTML = `<tr><td colspan="6" class="py-8 text-center text-red-400">Error loading collections</td></tr>`;
+      } finally {
+        btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Refresh`;
+      }
+    }
+
+    // Copy functions
+    function copyResult(elementId) {
+      const text = document.getElementById(elementId).textContent;
+      copyText(text);
+    }
+
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard', 'success'));
+    }
+
+    // Toast notifications
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      const colors = {
+        success: 'bg-green-600',
+        error: 'bg-red-600',
+        info: 'bg-blue-600'
+      };
+      toast.className = `toast ${colors[type]} text-white px-4 py-3 rounded-xl shadow-lg text-sm max-w-xs`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Update webhook URL display
+    document.getElementById('workerUrl').addEventListener('input', function() {
+      const url = this.value.trim().replace(/\/$/, '');
+      document.getElementById('webhookUrlDisplay').textContent = url ? `${url}/webhook` : 'Configure Worker URL first';
+    });
+
+    // Initialize
+    window.onload = () => {
+      checkHealth();
+      setInterval(checkHealth, 30000);
+      // Auto-update webhook display
+      document.getElementById('webhookUrlDisplay').textContent = `${baseUrl()}/webhook`;
+    };
+  </script>
+</body>
+</html>
